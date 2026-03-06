@@ -1,4 +1,8 @@
 import { MATCH_STATUS } from "../validation/matches.js";
+import { eq } from "drizzle-orm";
+import { db } from "../db/db.js";
+import { matches } from "../db/schema.js";
+
 
 export function getMatchStatus(startTime, endTime, now = new Date()) {
     const start = new Date(startTime);
@@ -22,7 +26,11 @@ export function getMatchStatus(startTime, endTime, now = new Date()) {
 }
 
 export async function getMatchStatusFromDB(matchId) {
-    const match = await Match.findById(matchId);
+    const [match] = await db
+        .select({ startTime: matches.startTime, endTime: matches.endTime })
+        .from(matches)
+        .where(eq(matches.id, matchId))
+        .limit(1);
     if (!match) {
         return null;
     }
